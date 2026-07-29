@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>Recall — Spaced Repetition Study Tracker</title>
+<meta name="description" content="Track topics and review them on an FSRS spaced-repetition schedule." />
+<meta name="theme-color" content="#121214" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Recall" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<section id="onboarding" class="onboarding" hidden>
+  <div class="ob-slides" id="obSlides">
+
+    <div class="ob-slide" data-slide="0">
+      <div class="ob-art ob-art--mark">
+        <svg viewBox="0 0 120 120" width="96" height="96" aria-hidden="true">
+          <path d="M28 62 L46 80 L92 34" fill="none" stroke="#5a2620" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.55" transform="translate(-10,-6)"/>
+          <path d="M28 62 L46 80 L92 34" fill="none" stroke="#e35d4c" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h1>Welcome to Recall</h1>
+      <p>Master any subject with the power of spaced repetition. Review smarter, not harder.</p>
+    </div>
+
+    <div class="ob-slide" data-slide="1">
+      <h1>The Forgetting Curve</h1>
+      <div class="ob-chart" aria-hidden="true">
+        <svg viewBox="0 0 260 160" width="260" height="160">
+          <line x1="30" y1="10" x2="30" y2="140" stroke="#4a4a4e" stroke-width="1.5"/>
+          <line x1="30" y1="140" x2="250" y2="140" stroke="#4a4a4e" stroke-width="1.5"/>
+          <path d="M30,20 C70,110 120,132 250,138" fill="none" stroke="#e35d4c" stroke-width="3" stroke-linecap="round"/>
+          <text x="4" y="80" fill="#8f8d92" font-size="11" transform="rotate(-90 4 80)">Retention</text>
+          <text x="130" y="156" fill="#8f8d92" font-size="11">Time</text>
+        </svg>
+      </div>
+      <p>Studies show we forget most of what we learn within a week if we don't revisit it.</p>
+    </div>
+
+    <div class="ob-slide" data-slide="2">
+      <h1>Optimum Revision</h1>
+      <div class="ob-chart" aria-hidden="true">
+        <svg viewBox="0 0 260 160" width="260" height="160">
+          <line x1="30" y1="10" x2="30" y2="140" stroke="#4a4a4e" stroke-width="1.5"/>
+          <line x1="30" y1="140" x2="250" y2="140" stroke="#4a4a4e" stroke-width="1.5"/>
+          <path d="M30,20 C45,70 58,95 70,100" fill="none" stroke="#e35d4c" stroke-width="2.5" stroke-dasharray="4 4" stroke-linecap="round"/>
+          <path d="M70,25 C85,65 98,88 108,96" fill="none" stroke="#e35d4c" stroke-width="2.5" stroke-dasharray="4 4" stroke-linecap="round"/>
+          <path d="M108,30 C140,45 190,75 250,95" fill="none" stroke="#e35d4c" stroke-width="3" stroke-linecap="round"/>
+          <text x="66" y="18" fill="#8f8d92" font-size="10">Rev 1</text>
+          <text x="104" y="22" fill="#8f8d92" font-size="10">Rev 2</text>
+        </svg>
+      </div>
+      <p>Recall reminds you to revisit each topic at the optimal moment for long-term memory.</p>
+    </div>
+
+    <div class="ob-slide" data-slide="3">
+      <div class="ob-art" aria-hidden="true">🚀</div>
+      <h1>Ready to Start?</h1>
+      <p>Add your first topic and let the algorithm handle the rest.</p>
+      <div class="ob-examples">
+        <button class="chip" data-example="Cranial Nerves|Anatomy">Cranial Nerves <span>Anatomy</span></button>
+        <button class="chip" data-example="Ch 4: Legal Personality|Company Law">Ch 4: Legal Personality <span>Company Law</span></button>
+        <button class="chip" data-example="Dijkstra's Algorithm|Algorithms">Dijkstra's Algorithm <span>Algorithms</span></button>
+        <button class="chip" data-example="Vedic Civilization|Ancient History">Vedic Civilization <span>Ancient History</span></button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="ob-footer">
+    <div class="ob-dots" id="obDots"></div>
+    <button class="btn btn--primary" id="obNext">Next</button>
+  </div>
+</section>
+
+<!-- APP SHELL -->
+<div id="app" class="app" hidden>
+
+  <!-- TO-DO VIEW -->
+  <main class="view" id="view-todo" data-view="todo">
+    <header class="view-header">
+      <h1>To-do</h1>
+      <div class="header-actions">
+        <button class="icon-btn" id="todoMenuBtn" aria-label="More options">⋮</button>
+      </div>
+    </header>
+    <div class="view-scroll" id="todoList"></div>
+    <button class="fab" id="fabAddTodo" aria-label="Add task">+</button>
+  </main>
+
+  <!-- TASKS VIEW -->
+  <main class="view" id="view-tasks" data-view="tasks" hidden>
+    <header class="view-header">
+      <button class="dropdown-trigger" id="projectDropdownBtn">
+        <span id="projectDropdownLabel">All Projects</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="header-actions">
+        <button class="icon-btn" id="sortBtn" aria-label="Sort">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+        </button>
+        <button class="icon-btn" id="tasksMenuBtn" aria-label="More options">⋮</button>
+      </div>
+    </header>
+    <div class="project-dropdown" id="projectDropdown" hidden></div>
+    <div class="view-scroll" id="tasksList"></div>
+    <button class="fab" id="fabAddTask" aria-label="Add task">+</button>
+  </main>
+
+  <!-- PROFILE VIEW -->
+  <main class="view" id="view-profile" data-view="profile" hidden>
+    <header class="view-header">
+      <h1>Profile</h1>
+      <div class="header-actions">
+        <button class="icon-btn" id="settingsBtn" aria-label="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+    <div class="view-scroll">
+      <div class="profile-ring-wrap">
+        <svg class="profile-ring" viewBox="0 0 200 200" width="220" height="220">
+          <circle cx="100" cy="100" r="82" fill="none" stroke="#232326" stroke-width="20"/>
+          <g id="ringSegments"></g>
+        </svg>
+        <div class="profile-ring-center">
+          <span id="ringTotal">0</span>
+          <small>topics</small>
+        </div>
+      </div>
+      <div class="profile-stats" id="profileStats"></div>
+      <div class="profile-note">
+        <p>Your data lives only on this device, in this browser. Back it up from <strong>Settings → Data</strong> whenever you like.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- SETTINGS VIEW -->
+  <main class="view view--sub" id="view-settings" data-view="settings" hidden>
+    <header class="view-header">
+      <button class="icon-btn" id="settingsBack" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1>Settings</h1>
+    </header>
+    <div class="view-scroll settings-scroll">
+
+      <div class="settings-group">
+        <div class="settings-label">Reminders</div>
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <div class="settings-row-title">Daily to-do reminder</div>
+            <div class="settings-row-sub" id="reminderSub">Get a notification when topics are due</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="reminderToggle">
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+        <div class="settings-row" id="reminderTimeRow" hidden>
+          <div class="settings-row-text">
+            <div class="settings-row-title">Reminder time</div>
+          </div>
+          <input type="time" id="reminderTime" class="time-input" value="09:00">
+        </div>
+        <p class="settings-hint" id="reminderHint"></p>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-label">Data</div>
+        <button class="settings-row settings-row--btn" id="exportBtn">
+          <div class="settings-row-text">
+            <div class="settings-row-title">Export data</div>
+            <div class="settings-row-sub">Save a backup file to your device</div>
+          </div>
+          <span class="chevron">›</span>
+        </button>
+        <button class="settings-row settings-row--btn" id="importBtn">
+          <div class="settings-row-text">
+            <div class="settings-row-title">Import data</div>
+            <div class="settings-row-sub">Restore from a backup file</div>
+          </div>
+          <span class="chevron">›</span>
+        </button>
+        <input type="file" id="importFile" accept="application/json" hidden>
+        <button class="settings-row settings-row--btn" id="resetBtn">
+          <div class="settings-row-text">
+            <div class="settings-row-title settings-row-title--danger">Reset all data</div>
+            <div class="settings-row-sub">Delete every project and task</div>
+          </div>
+          <span class="chevron">›</span>
+        </button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-label">Algorithm</div>
+        <div class="settings-row settings-row--col">
+          <div class="settings-row-text">
+            <div class="settings-row-title">Requested retention</div>
+            <div class="settings-row-sub">Higher = more frequent reviews, stronger recall</div>
+          </div>
+          <div class="slider-row">
+            <input type="range" id="retentionSlider" min="70" max="97" step="1" value="90">
+            <span id="retentionValue" class="slider-value">90%</span>
+          </div>
+        </div>
+        <p class="settings-hint">Recall uses FSRS-4.5, the same memory model behind modern spaced-repetition apps. Difficulty and stability are tracked per topic and update after every review.</p>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-label">Appearance</div>
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <div class="settings-row-title">Theme</div>
+          </div>
+          <select id="themeSelect" class="select-input">
+            <option value="system">System</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-label">About</div>
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <div class="settings-row-title">Recall</div>
+            <div class="settings-row-sub">v1.0.0 · runs entirely on this device</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-btn is-active" data-nav="todo" aria-label="To-do">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>To-do</span>
+    </button>
+    <button class="nav-btn" data-nav="tasks" aria-label="Tasks">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      <span>Tasks</span>
+    </button>
+    <button class="nav-btn" data-nav="profile" aria-label="Profile">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- RATING SHEET -->
+<div class="sheet-backdrop" id="ratingBackdrop" hidden>
+  <div class="sheet" id="ratingSheet" role="dialog" aria-label="Rate your recall">
+    <div class="sheet-handle"></div>
+    <h2 class="sheet-title" id="ratingTaskName">Topic name</h2>
+    <div class="rating-list">
+      <button class="rating-row" data-grade="1">
+        <span class="rating-icon rating-icon--relearn">↻</span>
+        <span class="rating-text">
+          <span class="rating-title">Relearn</span>
+          <span class="rating-sub">Felt completely lost, need to relearn</span>
+        </span>
+        <span class="rating-pill rating-pill--relearn" id="pill-1">—</span>
+      </button>
+      <button class="rating-row" data-grade="2">
+        <span class="rating-icon rating-icon--hard">☹</span>
+        <span class="rating-text">
+          <span class="rating-title">Hard</span>
+          <span class="rating-sub">Recalled the gist, missed the details</span>
+        </span>
+        <span class="rating-pill rating-pill--hard" id="pill-2">—</span>
+      </button>
+      <button class="rating-row" data-grade="3">
+        <span class="rating-icon rating-icon--good">🙂</span>
+        <span class="rating-text">
+          <span class="rating-title">Good</span>
+          <span class="rating-sub">Confident, even with small mistakes</span>
+        </span>
+        <span class="rating-pill rating-pill--good" id="pill-3">—</span>
+      </button>
+      <button class="rating-row" data-grade="4">
+        <span class="rating-icon rating-icon--easy">☺</span>
+        <span class="rating-text">
+          <span class="rating-title">Easy</span>
+          <span class="rating-sub">Excellent recall, you know this cold</span>
+        </span>
+        <span class="rating-pill rating-pill--easy" id="pill-4">—</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT TASK SHEET -->
+<div class="sheet-backdrop" id="taskFormBackdrop" hidden>
+  <div class="sheet sheet--tall" id="taskFormSheet" role="dialog" aria-label="Task details">
+    <div class="sheet-handle"></div>
+    <div class="form-field">
+      <label for="taskNameInput" class="form-label">Task name</label>
+      <input type="text" id="taskNameInput" class="form-input" placeholder="What do you need to study?">
+    </div>
+    <div class="form-field">
+      <label for="taskProjectInput" class="form-label">Project</label>
+      <input type="text" id="taskProjectInput" class="form-input" placeholder="Search or create a new project" autocomplete="off">
+      <div class="project-suggestions" id="projectSuggestions" hidden></div>
+    </div>
+    <div class="form-field">
+      <label for="taskNotesInput" class="form-label">Notes</label>
+      <textarea id="taskNotesInput" class="form-input form-textarea" placeholder="Add any extra useful info (optional)"></textarea>
+    </div>
+    <div class="form-row">
+      <button class="form-date-btn" id="taskStartBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span id="taskStartLabel">Start today</span>
+      </button>
+      <input type="date" id="taskStartDate" class="date-input" hidden>
+      <button class="btn btn--primary" id="taskFormSubmit">Add Task</button>
+    </div>
+    <p class="settings-hint" id="taskAlgoInfo" hidden></p>
+    <div class="form-row form-row--danger" id="taskDeleteRow" hidden>
+      <button class="btn btn--danger" id="taskDeleteBtn">Delete task</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
